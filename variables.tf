@@ -20,6 +20,12 @@ variable "server_name" {
   type        = string
 }
 
+variable "server_domain" {
+  description = "Domain of the server"
+  type        = string
+  default     = ""
+}
+
 variable "server_type" {
   description = "Type of server to create"
   type        = string
@@ -95,4 +101,11 @@ variable "ansible_groups" {
     "hetzner",
   ]
   nullable = false
+}
+
+
+variable "ansible_ssh_private_key_file" {
+  type        = string
+  description = "Defaults to null."
+  default     = ""
 }

@@ -4,7 +4,8 @@ data "hcloud_ssh_keys" "existing_ssh_keys" {
 
 resource "hcloud_ssh_key" "new_ssh_keys" {
   for_each   = var.new_ssh_keys
-  name       = each.key
+  # name       = each.key, 
+  name = var.server_domain != null ? "${each.key}-${var.server_name}.${var.server_domain}" : "${each.key}-${var.server_name}"
   public_key = each.value
 }
 
@@ -19,13 +20,13 @@ resource "hcloud_primary_ip" "primary_ipv4" {
 
 resource "hcloud_server" "server" {
 
-  depends_on = [ 
+  depends_on = [
     hcloud_primary_ip.primary_ipv4,
     data.hcloud_ssh_keys.existing_ssh_keys,
     hcloud_ssh_key.new_ssh_keys
   ]
 
-  name        = var.server_name
+  name        = var.server_domain != null ? "${var.server_name}.${var.server_domain}" : var.server_name
   server_type = var.server_type
   image       = var.image
   datacenter  = var.datacenter
@@ -59,5 +60,6 @@ resource "ansible_host" "default" {
     ansible_host     = coalesce(var.ansible_host, hcloud_primary_ip.primary_ipv4.ip_address, var.server_name)
     ansible_user     = var.ansible_user
     ansible_ssh_pass = var.ansible_ssh_pass
+    ansible_ssh_private_key_file = var.ansible_ssh_private_key_file
   }
 }
