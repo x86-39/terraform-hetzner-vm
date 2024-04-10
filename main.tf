@@ -5,12 +5,12 @@ data "hcloud_ssh_keys" "existing_ssh_keys" {
 resource "hcloud_ssh_key" "new_ssh_keys" {
   for_each   = var.new_ssh_keys
   # name       = each.key, 
-  name = var.server_domain != null ? "${each.key}-${var.server_name}.${var.server_domain}" : "${each.key}-${var.server_name}"
+  name = var.domain != null && var.domain != "" ? "${each.key}-${var.name}.${var.domain}" : "${each.key}-${var.name}"
   public_key = each.value
 }
 
 resource "hcloud_primary_ip" "primary_ipv4" {
-  name          = "primary_ip_${var.server_name}"
+  name          = "primary_ip_${var.name}"
   datacenter    = var.datacenter
   type          = "ipv4"
   assignee_type = "server"
@@ -26,8 +26,8 @@ resource "hcloud_server" "server" {
     hcloud_ssh_key.new_ssh_keys
   ]
 
-  name        = var.server_domain != null ? "${var.server_name}.${var.server_domain}" : var.server_name
-  server_type = var.server_type
+  name        = var.domain != null && var.domain != "" ? "${var.name}.${var.domain}" : var.name
+  server_type = var.type
   image       = var.image
   datacenter  = var.datacenter
   labels      = var.labels
@@ -53,13 +53,13 @@ resource "hcloud_server" "server" {
 }
 
 resource "ansible_host" "default" {
-  name   = coalesce(var.ansible_name, var.server_name)
+  name   = coalesce(var.ansible_name, var.name)
   groups = var.ansible_groups
 
   variables = {
-    ansible_host     = coalesce(var.ansible_host, hcloud_primary_ip.primary_ipv4.ip_address, var.server_name)
-    ansible_user     = var.ansible_user
-    ansible_ssh_pass = var.ansible_ssh_pass
-    ansible_ssh_private_key_file = var.ansible_ssh_private_key_file
+    ansible_host     = coalesce(var.ansible_host, hcloud_primary_ip.primary_ipv4.ip_address, var.name)
+    ansible_user     = coalesce(var.ansible_user, "root")
+    ansible_ssh_pass = coalesce(var.ansible_ssh_pass, "root")
+    ansible_ssh_private_key_file = try(var.ansible_ssh_private_key_file, "")
   }
 }

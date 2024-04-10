@@ -2,14 +2,14 @@ output "primary_ipv4_address" {
   value = hcloud_primary_ip.primary_ipv4.ip_address
 }
 
-output "server_name" {
+output "name" {
   value = hcloud_server.server.name
 }
 
-output "server_domain" {
-  value = var.server_domain
+output "domain" {
+  value = var.domain
 }
 
-output "server_id" {
+output "id" {
   value = hcloud_server.server.id
 }
